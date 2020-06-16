@@ -1,5 +1,6 @@
 # encoding: utf8
 from __future__ import unicode_literals
+import sys
 import logging
 
 try:
@@ -815,3 +816,20 @@ class TKLabelwidgetBO(BuilderObject):
 
 register_widget('pygubu.builder.widgets.Labelwidget', TKLabelwidgetBO,
                 'Labelwidget', ('Pygubu Helpers', 'tk', 'ttk'))
+
+
+if sys.version_info.major >= 3:
+    from tkinter import scrolledtext
+    
+    class TKScrolledText(TKText):
+        class_ = scrolledtext.ScrolledText
+        container = False
+        OPTIONS_STANDARD = tuple(set(TKText.OPTIONS_STANDARD)
+                                 - set(('xscrollcommand', 'yscrollcommand')))
+        properties = OPTIONS_STANDARD + TKText.OPTIONS_SPECIFIC + TKText.OPTIONS_CUSTOM
+        command_properties = tuple()
+
+
+    register_widget('tkinter.scrolledtext.ScrolledText', TKScrolledText,
+                    'ScrolledText', ('Control & Display', 'tk'))
+
