@@ -3,25 +3,36 @@ from __future__ import unicode_literals
 
 __all__ = ['StockImage', 'StockImageException', 'TK_IMAGE_FORMATS']
 
-import os
 import logging
+import os
+
 try:
     import tkinter as tk
-except:
+except ImportError:
     import Tkinter as tk
 
 
 logger = logging.getLogger(__name__)
-    
+
 
 class StockImageException(Exception):
     pass
 
 
-TK_IMAGE_FORMATS = ('.gif', '.pgm', '.ppm')
+BITMAP_TEMPLATE = '@{0}'
+TK_BITMAP_FORMATS = ['.xbm']
+TK_PHOTO_FORMATS = ['.gif', '.pgm', '.ppm']
+
+
+if os.name == 'nt':
+    TK_BITMAP_FORMATS.append('.ico')
+    BITMAP_TEMPLATE = '{0}'
 
 if tk.TkVersion >= 8.6:
-    TK_IMAGE_FORMATS = ('.png',) + TK_IMAGE_FORMATS
+    TK_PHOTO_FORMATS.append('.png')
+
+
+TK_IMAGE_FORMATS = TK_PHOTO_FORMATS + TK_BITMAP_FORMATS
 
 
 _img_notsupported = '''\
@@ -47,8 +58,10 @@ QwgAOw==
 '''
 
 STOCK_DATA = {
-    'img_not_supported': {'type': 'data', 'data': _img_notsupported, 'format': 'gif' }
-}
+    'img_not_supported': {
+        'type': 'data',
+        'data': _img_notsupported,
+        'format': 'gif'}}
 
 
 class StockImage(object):
@@ -61,7 +74,7 @@ When image is used, the class maintains it on memory for tkinter"""
     @classmethod
     def clear_cache(cls):
         """Call this before closing tk root"""
-        #Prevent tkinter errors on python 2 ??
+        # Prevent tkinter errors on python 2 ??
         for key in cls._cached:
             cls._cached[key] = None
         cls._cached = {}
@@ -81,7 +94,7 @@ When image is used, the class maintains it on memory for tkinter"""
 
         if key in cls._stock:
             logger.info('Warning, replacing resource %s', key)
-        cls._stock[key] = {'type': 'data', 'data': data, 'format': format }
+        cls._stock[key] = {'type': 'data', 'data': data, 'format': format}
         logger.info('%s registered as %s', 'data', key)
 
     @classmethod
@@ -101,12 +114,12 @@ When image is used, the class maintains it on memory for tkinter"""
     def register_from_dir(cls, dir_path, prefix='', ext=TK_IMAGE_FORMATS):
         """List files from dir_path and register images with
             filename as key (without extension)
-        
+
         :param str dir_path: path to search for images.
         :param str prefix: Additionaly a prefix for the key can be provided,
             so the resulting key will be prefix + filename
         :param iterable ext: list of file extensions to load. Defaults to
-            tk suported image extensions. Example ('.jpg', '.png')
+            tk supported image extensions. Example ('.jpg', '.png')
         """
 
         for filename in os.listdir(dir_path):
@@ -122,6 +135,7 @@ When image is used, the class maintains it on memory for tkinter"""
         v = cls._stock[rkey]
         img = None
         itype = v['type']
+        from_ = itype
         if itype in ('stock', 'data'):
             img = tk.PhotoImage(format=v['format'], data=v['data'])
         elif itype == 'created':
@@ -129,10 +143,15 @@ When image is used, the class maintains it on memory for tkinter"""
         else:
             # custom
             fpath = v['filename']
+            from_ = fpath
             fname = os.path.basename(fpath)
             name, file_ext = os.path.splitext(fname)
-            if file_ext in cls._formats:
+            file_ext = str(file_ext).lower()
+
+            if file_ext in TK_PHOTO_FORMATS:
                 img = tk.PhotoImage(file=fpath)
+            elif file_ext in TK_BITMAP_FORMATS:
+                img = tk.BitmapImage(file=fpath)
             else:
                 try:
                     from PIL import Image, ImageTk
@@ -142,9 +161,9 @@ When image is used, the class maintains it on memory for tkinter"""
                     msg = 'Error loading image %s, try installing Pillow module.'
                     logger.error(msg, fpath)
                     img = cls.get('img_not_supported')
-                
+
         cls._cached[rkey] = img
-        logger.info('Loaded resource %s.', rkey)
+        logger.info('Loaded resource %s from %s.', rkey, from_)
         return img
 
     @classmethod
@@ -161,3 +180,20 @@ When image is used, the class maintains it on memory for tkinter"""
             return img
         else:
             raise StockImageException('StockImage: %s not registered.' % rkey)
+
+    @classmethod
+    def as_iconbitmap(cls, rkey):
+        """Get image path for use in iconbitmap property
+        """
+        img = None
+        if rkey in cls._stock:
+            data = cls._stock[rkey]
+            if data['type'] not in ('stock', 'data', 'image'):
+                fpath = data['filename']
+                fname = os.path.basename(fpath)
+                name, file_ext = os.path.splitext(fname)
+                file_ext = str(file_ext).lower()
+
+                if file_ext in TK_BITMAP_FORMATS:
+                    img = BITMAP_TEMPLATE.format(fpath)
+        return img

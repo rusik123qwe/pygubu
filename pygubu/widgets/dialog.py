@@ -1,9 +1,10 @@
 # encoding: UTF-8
 from __future__ import unicode_literals
+
 try:
     import tkinter as tk
     import tkinter.ttk as ttk
-except:
+except ImportError:
     import Tkinter as tk
     import ttk
 
@@ -17,6 +18,7 @@ class Dialog(object):
     def __init__(self, parent, modal=False):
         self.parent = parent
         self.is_modal = modal
+        self.show_centered = True
         self.running_modal = False
         self.toplevel = tk.Toplevel(parent)
         self.toplevel.withdraw()
@@ -29,7 +31,6 @@ class Dialog(object):
 
         #self.frame.pack(fill='both', expand=True)
 
-
     def _init_before(self):
         pass
 
@@ -39,36 +40,49 @@ class Dialog(object):
     def _init_after(self):
         pass
 
-
     def set_modal(self, modal):
         self.is_modal = modal
-        
-    
+
+    def center_window(self):
+        """Center a window on its parent or screen."""
+        window = self.toplevel
+        height = window.winfo_height()
+        width = window.winfo_width()
+        parent = self.parent
+        if parent:
+            x_coord = int(parent.winfo_x() +
+                          (parent.winfo_width() / 2 - width / 2))
+            y_coord = int(parent.winfo_y() +
+                          (parent.winfo_height() / 2 - height / 2))
+        else:
+            x_coord = int(window.winfo_screenwidth() / 2 - width / 2)
+            y_coord = int(window.winfo_screenheight() / 2 - height / 2)
+        geom = '{0}x{1}+{2}+{3}'.format(width, height, x_coord, y_coord)
+        window.geometry(geom)
+
     def run(self):
         self.toplevel.transient(self.parent)
         self.toplevel.deiconify()
         self.toplevel.wait_visibility()
+        if self.show_centered:
+            self.center_window()
         initial_focus = self.toplevel.focus_lastfor()
         if initial_focus:
             initial_focus.focus_set()
         if self.is_modal:
-            self.running_modal =True
+            self.running_modal = True
             self.toplevel.grab_set()
-            
 
     def destroy(self):
         if self.toplevel:
             self.toplevel.destroy()
         self.toplevel = None
 
-
     def _on_wm_delete_window(self):
         self.toplevel.event_generate('<<DialogClose>>')
-        
-    
+
     def _default_close_action(self, dialog):
         self.close()
-
 
     def close(self):
         if self.running_modal:
@@ -77,11 +91,9 @@ class Dialog(object):
         self.toplevel.withdraw()
         self.parent.focus_set()
 
-
     def show(self):
         if self.toplevel:
             self.toplevel.deiconify()
-
 
     def set_title(self, title):
         """Sets the dialog title"""
@@ -96,7 +108,7 @@ class Dialog(object):
             value = kw.pop('modal')
             self.set_modal(tk.getboolean(value))
         self.toplevel.configure(cnf, **kw)
-    
+
     config = configure
 
     def cget(self, key):
@@ -113,7 +125,7 @@ class Dialog(object):
         def dialog_cb(event, dialog=self):
             func(dialog)
         return self.toplevel.bind(sequence, dialog_cb, add)
-        
+
 #    def unbind(self, sequence, funcid=None):
 #        pass
 
@@ -139,7 +151,7 @@ if __name__ == '__main__':
             dialog.run()
         else:
             dialog.show()
-            
+
     def custom_callback(dialog):
         print('Custom callback')
         dialog.close()

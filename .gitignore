@@ -10,5 +10,7 @@ TODO
 pygubu.nja
 pygubu.egg-info/
 myvenv*/
+venv/
 pygubu-core.wpr
 pygubu-core.wpu
+*.kdev4
