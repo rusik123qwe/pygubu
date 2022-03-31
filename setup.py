@@ -10,14 +10,12 @@ Needed packages to run (using Debian/Ubuntu package names):
 import os
 from io import open
 
-import pygubu
-
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
 
-VERSION = pygubu.__version__
+VERSION = '0.21'
 
 _dirname_ = os.path.dirname(__file__)
 readme_path = os.path.join(_dirname_, 'README.md')
