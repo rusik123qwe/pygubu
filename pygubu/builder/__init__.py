@@ -1,15 +1,8 @@
-# encoding: utf8
-from __future__ import unicode_literals
-
+# encoding: utf-8
 import importlib
 import logging
 import os
-import xml.etree.ElementTree as ET
-
-try:
-    import tkinter
-except ImportError:
-    import Tkinter as tkinter
+import tkinter
 
 from pygubu.builder.builderobject import CB_TYPES, CLASS_MAP, BuilderObject
 from pygubu.builder.widgetmeta import WidgetMeta
@@ -24,9 +17,11 @@ logger = logging.getLogger(__name__)
 # Builder class
 #
 
+
 class Builder(object):
     """Allows to build a tk interface from xml definition."""
-    TK_VARIABLE_TYPES = ('string', 'int', 'boolean', 'double')
+
+    TK_VARIABLE_TYPES = ("string", "int", "boolean", "double")
 
     def __init__(self, translator=None):
         super(Builder, self).__init__()
@@ -43,7 +38,7 @@ class Builder(object):
 
     def get_image(self, path):
         """Return tk image corresponding to name which is taken form path."""
-        image = ''
+        image = ""
         name = os.path.basename(path)
         self.__load_image(path)
         try:
@@ -102,9 +97,9 @@ class Builder(object):
 
     def _process_variable_description(self, name_or_desc):
         vname = name_or_desc
-        vtype = 'string'  # default type if not defined
-        if ':' in name_or_desc:
-            vtype, vname = name_or_desc.split(':')
+        vtype = "string"  # default type if not defined
+        if ":" in name_or_desc:
+            vtype, vname = name_or_desc.split(":")
             #  Fix incorrect order bug #33
             if vtype not in self.TK_VARIABLE_TYPES:
                 #  Swap order
@@ -125,11 +120,11 @@ class Builder(object):
         else:
             if vtype is None:
                 # get type from name
-                if type_from_name == 'int':
+                if type_from_name == "int":
                     var = tkinter.IntVar()
-                elif type_from_name == 'boolean':
+                elif type_from_name == "boolean":
                     var = tkinter.BooleanVar()
-                elif type_from_name == 'double':
+                elif type_from_name == "double":
                     var = tkinter.DoubleVar()
                 else:
                     var = tkinter.StringVar()
@@ -160,7 +155,7 @@ class Builder(object):
         else:
             wmeta = self.uidefinition.get_widget(name)
             if wmeta is not None:
-                rmeta = WidgetMeta('root', 'root')
+                rmeta = WidgetMeta("root", "root")
                 root = BuilderObject(self, rmeta)
                 root.widget = master
                 bobject = self._realize(root, wmeta)
@@ -171,26 +166,28 @@ class Builder(object):
         return widget
 
     def _import_class(self, modulename):
-        if modulename.startswith('tk.'):
-            importlib.import_module('pygubu.builder.tkstdwidgets')
-        elif modulename.startswith('ttk.'):
-            importlib.import_module('pygubu.builder.ttkstdwidgets')
+        if modulename.startswith("tk."):
+            importlib.import_module("pygubu.builder.tkstdwidgets")
+        elif modulename.startswith("ttk."):
+            importlib.import_module("pygubu.builder.ttkstdwidgets")
         else:
             # Import module as full path
             try:
                 importlib.import_module(modulename)
-            except ImportError as e:
-                msg = 'Failed to import module as fullname: %s'
-                logger.warning(msg, modulename)
-                logger.exception(e)
+                logger.debug("Module %s loaded.", modulename)
+            except (ModuleNotFoundError, ImportError) as e:
+                msg = "Failed to import module as fullname: %s"
+                logger.debug(msg, modulename)
                 # A single module can contain various widgets
                 # try to import the first part of the path
-                if '.' in modulename:
-                    first, last = modulename.rsplit('.', 1)
+                if "." in modulename:
+                    first, last = modulename.rsplit(".", 1)
                     try:
                         importlib.import_module(first)
-                    except ImportError as e:
+                        logger.debug("Module %s loaded.", first)
+                    except (ModuleNotFoundError, ImportError) as e:
                         importlib.import_module(last)
+                        logger.debug("Module %s loaded.", last)
                 else:
                     raise e
 
@@ -208,8 +205,9 @@ class Builder(object):
 
             self.objects[wmeta.identifier] = parent
 
-            for childmeta in \
-                    self.uidefinition.widget_children(wmeta.identifier):
+            for childmeta in self.uidefinition.widget_children(
+                wmeta.identifier
+            ):
                 child = self._realize(parent, childmeta)
                 parent.add_child(child)
             parent.configure()
@@ -226,10 +224,11 @@ class Builder(object):
         wmeta = bobject.wmeta
         cname = wmeta.classname
         wmeta.layout_required = bobject.layout_required
-        has_layout = (len(wmeta.layout_properties) > 1)
+        has_layout = len(wmeta.layout_properties) > 1
         if wmeta.layout_required and not has_layout:
-            logger.debug('No layout information for: (%s, %s).',
-                         cname, wmeta.identifier)
+            logger.debug(
+                "No layout information for: (%s, %s).", cname, wmeta.identifier
+            )
 
     def _post_realize(self, bobject):
         pass
@@ -249,7 +248,7 @@ class Builder(object):
                 notconnected.extend(missing)
         if notconnected:
             notconnected = list(set(notconnected))
-            msg = 'Missing callbacks for commands: %s'
+            msg = "Missing callbacks for commands: %s"
             logger.warning(msg, notconnected)
             return notconnected
         else:
@@ -268,4 +267,7 @@ class Builder(object):
         raise NotImplementedError()
 
     def code_create_callback(self, widgetid, cbname, cbtype, args=None):
+        raise NotImplementedError()
+
+    def code_translate_str(self, value: str) -> str:
         raise NotImplementedError()

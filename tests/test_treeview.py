@@ -1,17 +1,14 @@
-# encoding: utf8
+# encoding: utf-8
 import os
 import sys
 import unittest
-try:
-    import tkinter as tk
-    import tkinter.ttk as ttk
-except:
-    import Tkinter as tk
-    import ttk
+import tkinter as tk
+import tkinter.ttk as ttk
 
 
-pygubu_basedir = os.path.abspath(os.path.dirname(
-                    os.path.dirname(os.path.realpath(sys.argv[0]))))
+pygubu_basedir = os.path.abspath(
+    os.path.dirname(os.path.dirname(os.path.realpath(sys.argv[0])))
+)
 if pygubu_basedir not in sys.path:
     sys.path.insert(0, pygubu_basedir)
 
@@ -20,7 +17,6 @@ import support
 
 
 class TestTreeview(unittest.TestCase):
-
     def setUp(self):
         support.root_deiconify()
         xmldata = """<?xml version="1.0" ?>
@@ -86,9 +82,8 @@ class TestTreeview(unittest.TestCase):
 """
         self.builder = builder = pygubu.Builder()
         builder.add_from_string(xmldata)
-        self.widget = builder.get_object('treeview')
+        self.widget = builder.get_object("treeview")
         self.widget.wait_visibility()
-
 
     def tearDown(self):
         support.root_withdraw()
@@ -98,40 +93,40 @@ class TestTreeview(unittest.TestCase):
         self.widget.destroy()
 
     def test_selectmode(self):
-        expected = 'browse'
-        value = str(self.widget.cget('selectmode'))
+        expected = "browse"
+        value = str(self.widget.cget("selectmode"))
         self.assertEqual(expected, value)
         self.widget.destroy()
 
     def test_columns(self):
-        columns = ('column1', 'hidden_column')
-        wcolumns = self.widget.cget('columns')
+        columns = ("column1", "hidden_column")
+        wcolumns = self.widget.cget("columns")
         self.assertEqual(columns, wcolumns)
 
-        dcolumns = ('column1',)
-        wdcolumns = self.widget.cget('displaycolumns')
+        dcolumns = ("column1",)
+        wdcolumns = self.widget.cget("displaycolumns")
         self.assertEqual(dcolumns, wdcolumns)
 
         self.widget.destroy()
 
     def test_tree_heading(self):
-        wh = self.widget.heading('#0')
+        wh = self.widget.heading("#0")
         heading = {
-            'text': 'Tree',
-            'anchor': 'w',
-            }
+            "text": "Tree",
+            "anchor": "w",
+        }
         for k, v in heading.items():
             self.assertEqual(v, wh[k])
         self.widget.destroy()
 
     def test_tree_column(self):
-        wc = self.widget.column('#0')
+        wc = self.widget.column("#0")
         column = {
-            'anchor': 'w',
-            'stretch': 1,
-            'width': 200,
-            'minwidth': 200,
-            }
+            "anchor": "w",
+            "stretch": 1,
+            "width": 200,
+            "minwidth": 200,
+        }
 
         for k, v in column.items():
             self.assertEqual(v, wc[k])
@@ -143,12 +138,12 @@ class TestTreeview(unittest.TestCase):
         def on_treecolumn_click():
             success.append(1)
 
-        cbdic = { 'on_treecolumn_click': on_treecolumn_click }
+        cbdic = {"on_treecolumn_click": on_treecolumn_click}
         self.builder.connect_callbacks(cbdic)
 
         x, y = self.widget.winfo_x(), self.widget.winfo_y()
-        self.widget.event_generate('<ButtonPress-1>', x=x+5, y=y+5)
-        self.widget.event_generate('<ButtonRelease-1>', x=x+5, y=y+5)
+        self.widget.event_generate("<ButtonPress-1>", x=x + 5, y=y + 5)
+        self.widget.event_generate("<ButtonRelease-1>", x=x + 5, y=y + 5)
         self.widget.update()
 
         self.assertTrue(success)
@@ -165,15 +160,13 @@ class TestTreeview(unittest.TestCase):
         self.builder.connect_callbacks(cbobj)
 
         x, y = self.widget.winfo_x(), self.widget.winfo_y()
-        self.widget.event_generate('<ButtonPress-1>', x=x+5, y=y+5)
-        self.widget.event_generate('<ButtonRelease-1>', x=x+5, y=y+5)
+        self.widget.event_generate("<ButtonPress-1>", x=x + 5, y=y + 5)
+        self.widget.event_generate("<ButtonRelease-1>", x=x + 5, y=y + 5)
         self.widget.update()
 
         self.assertTrue(success)
         self.widget.destroy()
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
-

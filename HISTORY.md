@@ -1,6 +1,35 @@
 History
 =======
 
+Changes for version 0.23
+
+  * Translations for pygubu strings in pygubu-designer (larryw3i)
+
+Changes for version 0.22
+
+  * Code generation: mark translatable text in code. issue alejandroautalan/pygubu-designer#120
+  * Code generation: generate keyword arguments as integers when posible. issue alejandroautalan/pygubu-designer#114
+  * Code generation: Fix OptionMenu. issue alejandroautalan/pygubu-designer#125
+
+Changes for version 0.21
+
+  * Editabletreeview: Add InplaceEditor abstract class for better management of column data editors.
+  * Improve argument names for entry validate callback.
+  * Fix: Generate escaped strings on code generation.
+  * Other minor fixes.
+
+Changes for version 0.20
+
+  * Removed Python 2.7 support, Minimum Python version required is now 3.6
+  * Added support to configure grid with 'all' index
+  * Change in xml specification. Interface version is now 1.2. This includes reorganization of grid row/column properties.
+
+Changes for version 0.19
+
+  * Fix generating redundant code for grid properties
+  * Fix install error on python 2.7
+  * This is the last version with python 2.7 support
+
 Changes for version 0.9.8
 
   * Use entry_points field for installing a startup script with setuptools
